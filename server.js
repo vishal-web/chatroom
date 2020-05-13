@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-const PORT = process.env.PORT || 8182;
+const PORT = process.env.PORT || 4182;
 
 // set static folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -64,8 +64,30 @@ io.on('connection', socket => {
             });
         }
     });
+
+    socket.on('make-offer', (data) => {
+        io.to(data.to).emit('offer-made', {
+            offer: data.offer,
+            socket: socket.id
+        });
+    });
+
+    socket.on('make-answer', function (data) {
+        console.log("make-answer", data.to);
+        io.to(data.to).emit('answer-made', {
+            socket: socket.id,
+            answer: data.answer
+        });
+    });
+
+    socket.on("call-user", data => {
+        io.to(data.to).emit("call-made", {
+            offer: data.offer,
+            socket: socket.id
+        });
+    });
 });
 
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => console.log(`Server is running on port ${PORT}`));
 
 
